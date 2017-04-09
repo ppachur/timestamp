@@ -2,6 +2,8 @@
 
 A small program that provides useful information about unix-timestamps on the command line.
 
+[![Build Status](https://travis-ci.org/piezzo/timestamp.svg?branch=master)](https://travis-ci.org/piezzo/timestamp)
+
 ## Usage
 
 ```
