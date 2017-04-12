@@ -1,43 +1,56 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 )
 
+var diffFlag int64
+var timeFlag string
+var timestampFlag int64
+
+func init() {
+	flag.Int64Var(&diffFlag, "diff", 0, "difference relative to current or provided (if present) time in hours. Eg. -1")
+	flag.StringVar(&timeFlag, "time", "", "a date provided similar to '2006-01-22T15:04'")
+	flag.Int64Var(&timestampFlag, "timestamp", 0, "a date provided as a unix timestamp")
+	flag.Parse()
+}
+
 func main() {
-	if len(os.Args) == 2 {
-		t := time.Now()
-		tUTC := t.UTC()
-		if strings.Index(os.Args[1], "+") >= 0 || strings.Index(os.Args[1], "-") >= 0 { // difference provided: get timestamp
-			fmt.Printf("Calculating current date %s hour(s).\n", os.Args[1])
-			multiplyer, err := strconv.ParseInt(os.Args[1], 10, 64)
-			if err != nil {
-				fmt.Printf("Error parsing input: %s\n", err)
-			}
-			d := time.Duration(multiplyer)
-			tThen := t.Add(d * time.Hour)
-			tThenUTC := tThen.UTC()
-			fmt.Printf("Current time is %s / %s :: Unix Time: %s\n", t.Format(time.UnixDate), tUTC.Format(time.UnixDate), strconv.FormatInt(int64(t.Unix()), 10))
-			fmt.Printf("Calculated time is %s / %s :: Unix Time: %s\n\n", tThen.Format(time.UnixDate), tThenUTC.Format(time.UnixDate), strconv.FormatInt(int64(tThen.Unix()), 10))
-		} else { // timestamp provided, get difference
-			fmt.Printf("Calculating time difference between provided timestamp %s an current time.\n", os.Args[1])
-			timestamp, err := strconv.ParseInt(os.Args[1], 10, 64)
-			if err != nil {
-				fmt.Printf("Error parsing input: %s\n", err)
-			}
-			tThen := time.Unix(timestamp, 0)
-			tDiff := tThen.Sub(t)
-			tThenUTC := tThen.UTC()
-			fmt.Printf("Current time is %s / %s :: Unix Time: %s\n", t.Format(time.UnixDate), tUTC.Format(time.UnixDate), strconv.FormatInt(int64(t.Unix()), 10))
-			fmt.Printf("Provided time is %s / %s :: Unix Time: %s\nDifference: %f hours or %f days\n\n", tThen.Format(time.UnixDate), tThenUTC.Format(time.UnixDate), strconv.FormatInt(int64(tThen.Unix()), 10), tDiff.Hours(), (tDiff.Hours() / 24))
+	tNow := time.Now()
+	tProvided := tNow
+	baseIsCurrentTime := true
+	differencePresent := false
+	t := tNow
+
+	if timestampFlag != 0 {
+		tProvided = time.Unix(timestampFlag, 0)
+		baseIsCurrentTime = false
+	} else if timeFlag != "" {
+		const longForm = "2006-01-02T15:04"
+		tTemp, err := time.Parse(longForm, timeFlag)
+		if err != nil {
+			fmt.Println("Unable to parse provided time. Please use exactly this format: 'YYYY-MM-DDTHH:mm'")
+			os.Exit(1)
 		}
-	} else { // wrong number of arguments, get help
-		fmt.Printf("usage: %[1]s [+|-][hours : int] gives date and timestamp. E.g. '%[1]s +1'\n", os.Args[0])
-		fmt.Printf("              [timestamp : int] gives the time difference between a provided unix-timestamp and current time. E.g. '%s 1234567890'\n", os.Args[0])
-		os.Exit(1)
+		tProvided = tTemp
+		t = tTemp
+		baseIsCurrentTime = false
+	}
+
+	if diffFlag != 0 {
+		t = t.Add(time.Duration(diffFlag) * time.Hour)
+		differencePresent = true
+	}
+
+	fmt.Printf("Current time is %s / %s :: Unix Time: %s\n\n", tNow.Format(time.UnixDate), tNow.UTC().Format(time.UnixDate), strconv.FormatInt(int64(tNow.Unix()), 10))
+	if !baseIsCurrentTime {
+		fmt.Printf("Provided time is %s / %s :: Unix Time: %s\nDifference to provided time: %f hours or %f days from now\n\n", tProvided.Format(time.UnixDate), tProvided.UTC().Format(time.UnixDate), strconv.FormatInt(int64(tProvided.Unix()), 10), tProvided.Sub(tNow).Hours(), (tProvided.Sub(tNow).Hours() / 24))
+	}
+	if differencePresent {
+		fmt.Printf("Calculated time is %s / %s :: Unix Time: %s\nDifference to calculated time: %f hours or %f days from now\n\n", t.Format(time.UnixDate), t.UTC().Format(time.UnixDate), strconv.FormatInt(int64(t.Unix()), 10), t.Sub(tNow).Hours(), (t.Sub(tNow).Hours() / 24))
 	}
 }
