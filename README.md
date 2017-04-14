@@ -7,7 +7,7 @@ A small program that provides useful information about unix-timestamps on the co
 ## Usage
 
 ```
-go run main.go [[--time time : string]|[--timestamp timestamp : int]] [--diff [+|-]hours : int]]
+go run main.go [[--time time : string]|[--timestamp timestamp : int]] [--diff [+|-]hours : int]] [--clean [--date]]
 ```
 
 
