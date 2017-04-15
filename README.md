@@ -10,6 +10,11 @@ A small program that provides useful information about unix-timestamps on the co
 go run main.go [[--time time : string]|[--timestamp timestamp : int]] [--diff [+|-]hours : int]] [--clean [--date]]
 ```
 
+## Features
+
+* Convert between dates and timestamps
+* Add/substract hours
+* Provides --clean option for scripting
 
 ## Requirements
 
