@@ -72,15 +72,15 @@ func printOutput(value int64, resultType string) {
 
 func main() {
 	base := getBaseTime()
-	if diffFlag != 0 && (timeFlag == "" || timestampFlag == 0) && !cleanFlag {
+	if (timeFlag == "" || timestampFlag == 0) && !cleanFlag {
 		printOutput(base, "current time")
 	}
 	if (timeFlag != "" || timestampFlag != 0) && !cleanFlag {
 		printOutput(base, "provided")
 	}
-
-	result := getResultTime(base)
-	printOutput(result, "calculated")
-	os.Exit(0)
-
+	if diffFlag != 0 {
+		result := getResultTime(base)
+		printOutput(result, "calculated")
+		os.Exit(0)
+	}
 }
