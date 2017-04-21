@@ -6,5 +6,9 @@
 .Spotlight-V100
 .Trashes
 
+# dev-env
+launch.json
+debug
+
 # build stuff
 main
